@@ -71,6 +71,26 @@ def multi_combo_combo(n,orig):
         list12.append(str(inter))
     return list12
 
+def update_super_combo(orig, multi):
+    hyper_list = []
+    for i in range(0,len(orig)):
+        subcombo = orig[i]
+        print(subcombo)
+        toupdate = []
+        for j in range(0,len(subcombo)):
+            number = int(subcombo[j]) * multi[i]
+            toupdate.append(str(number))
+        hyper_list.append(toupdate)
+    return hyper_list
+
+def sum_of_multis(multi):
+    counter = 0
+    for num in multi:
+        counter += num
+    return counter
+
+
+# print(update_super_combo(([('0'),('1','2'),('1','2','3')]), (1,2,3)))
 
 def part_two():
     total = 0
@@ -80,9 +100,10 @@ def part_two():
         # print(expected)
         data = []
         for i in range(1, len(concats) - 1):
-            data.append(concats[i])
+            data.append(concats[i].strip('(').strip(')'))
         found = False
-        counter = 0
+        counter = 2
+        summer = 0
         while not found:
             multi_combinations = list(itertools.combinations(create_list(counter), counter))
             for i in range(0,len(multi_combinations)):
@@ -90,19 +111,19 @@ def part_two():
                 combinations = list(itertools.combinations(data, counter))
                 # print(combinations)
                 for combo in combinations:
-
-                    if do_move_p2(multi_combo_combo(multi[i],combo), expected):
-
+                    if do_move_p2(update_super_combo(combo,multi), expected):
                         found = True
+                        summer = sum_of_multis(multi)
+                        counter += 1
                         # print(combo)
-            total += counter
+            total += summer
     return total
 
-print('Part One:', part_one())
-# print(part_two())
-
-print(create_list(4))
-print(multi_combo_combo(4,('1','2','3','4')))
-print(list(itertools.combinations_with_replacement([1,2,3,4,5],5)))
+# print('Part One:', part_one())
+print(part_two())
+#
+# print(create_list(4))
+# print(multi_combo_combo(4,('1','2','3','4')))
+# print(list(itertools.combinations_with_replacement([1,2,3,4,5],5)))
 
 # do_move(['(1,3)','(1,3)','(2)','(2,3)','(0,2)','(0,1)'],'[.##.]')
