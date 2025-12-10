@@ -24,16 +24,20 @@ def do_move(combo,expected):
                 str = str[:num] + '.' + str[num + 1:]
     return str == expected
 
-def do_move_p2(combo,expected):
+def do_move_p2(combo,multi,expected):
     dummy = []
     for i in range(len(expected)):
         dummy.append('0')
     # print(dummy)
+    counter = 0
     for subcombo in combo:
-        subcombo = subcombo.strip('(').strip(')').split(',')
-        for num in subcombo:
-            num = int(num)
-            dummy[num] = str(int(dummy[num]) + 1)
+        subcombo1 = subcombo.split(',')
+
+        for i in range(len(subcombo1)):
+            num = int(subcombo1[i])
+            # print(i,subcombo1)
+            dummy[num] = str(int(dummy[num]) + int(multi[counter]))
+        counter += 1
     # print(dummy)
     return dummy == expected
 
@@ -58,9 +62,9 @@ def part_one():
         total += counter
     return total
 
-def create_list(n):
+def create_list():
     list12 = []
-    for i in range(1,n+1):
+    for i in range(0,11):
         list12.append(str(i))
     return list12
 
@@ -71,17 +75,7 @@ def multi_combo_combo(n,orig):
         list12.append(str(inter))
     return list12
 
-def update_super_combo(orig, multi):
-    hyper_list = []
-    for i in range(0,len(orig)):
-        subcombo = orig[i]
-        print(subcombo)
-        toupdate = []
-        for j in range(0,len(subcombo)):
-            number = int(subcombo[j]) * multi[i]
-            toupdate.append(str(number))
-        hyper_list.append(toupdate)
-    return hyper_list
+
 
 def sum_of_multis(multi):
     counter = 0
@@ -97,21 +91,25 @@ def part_two():
     for line in newlines:
         concats = line.split(' ')
         expected = concats[len(concats)-1].strip('{').strip('}').split(',')
+        print(expected)
         # print(expected)
         data = []
         for i in range(1, len(concats) - 1):
             data.append(concats[i].strip('(').strip(')'))
         found = False
-        counter = 2
+        counter = 1
         summer = 0
         while not found:
-            multi_combinations = list(itertools.combinations(create_list(counter), counter))
+            multi_combinations = list(itertools.combinations_with_replacement(create_list(), counter))
+            print(multi_combinations)
             for i in range(0,len(multi_combinations)):
+                # print(i)
                 multi = multi_combinations[i]
                 combinations = list(itertools.combinations(data, counter))
+                # print(combinations,'hi')
                 # print(combinations)
                 for combo in combinations:
-                    if do_move_p2(update_super_combo(combo,multi), expected):
+                    if do_move_p2(combo,multi, expected):
                         found = True
                         summer = sum_of_multis(multi)
                         counter += 1
@@ -119,10 +117,8 @@ def part_two():
             total += summer
     return total
 
-# print('Part One:', part_one())
+# print('Part One:', part_one())\
 print(part_two())
-#
-# print(create_list(4))
 # print(multi_combo_combo(4,('1','2','3','4')))
 # print(list(itertools.combinations_with_replacement([1,2,3,4,5],5)))
 
