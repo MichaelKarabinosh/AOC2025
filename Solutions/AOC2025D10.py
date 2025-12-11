@@ -1,5 +1,5 @@
 import itertools
-import math
+import pulp
 
 with open('../Inputs/InputFile10', 'r') as file:
     lines = file.readlines()
@@ -24,22 +24,6 @@ def do_move(combo,expected):
                 str = str[:num] + '.' + str[num + 1:]
     return str == expected
 
-def do_move_p2(combo,multi,expected):
-    dummy = []
-    for i in range(len(expected)):
-        dummy.append('0')
-    # print(dummy)
-    counter = 0
-    for subcombo in combo:
-        subcombo1 = subcombo.split(',')
-
-        for i in range(len(subcombo1)):
-            num = int(subcombo1[i])
-            # print(i,subcombo1)
-            dummy[num] = str(int(dummy[num]) + int(multi[counter]))
-        counter += 1
-    # print(dummy)
-    return dummy == expected
 
 def part_one():
     total = 0
@@ -62,64 +46,48 @@ def part_one():
         total += counter
     return total
 
-def create_list():
-    list12 = []
-    for i in range(0,11):
-        list12.append(str(i))
-    return list12
 
-def multi_combo_combo(n,orig):
-    list12 = []
-    for i in range(0,n):
-        inter = int(orig[i])*n
-        list12.append(str(inter))
-    return list12
+def prep_rref(orig,expected):
+    dummy = []
+    for i in range(0,len(expected)):
+        dummy.append(0)
+    for num in orig:
+        dummy[num] = dummy[num] + 1
+    return dummy
 
 
-
-def sum_of_multis(multi):
-    counter = 0
-    for num in multi:
-        counter += num
-    return counter
-
-
-# print(update_super_combo(([('0'),('1','2'),('1','2','3')]), (1,2,3)))
+def solve_min_presses(buttons, targets):
+    output_length = len(targets)
+    num_buttons = len(buttons)
+    prob = pulp.LpProblem("min_presses", pulp.LpMinimize)
+    x = []
+    for j in range(num_buttons):
+        x.append(pulp.LpVariable(f"x{j}", lowBound=0, cat='Integer'))
+    # x = [pulp.LpVariable(f"x{j}", lowBound=0, cat='Integer') for j in range(num_buttons)]
+    prob += pulp.lpSum(x)
+    for p in range(output_length):
+        prob += pulp.lpSum(x[j] for j in range(num_buttons) if p in buttons[j]) == targets[p]
+    status = prob.solve(pulp.PULP_CBC_CMD(msg=0))
+    return int(pulp.value(prob.objective))
 
 def part_two():
     total = 0
     for line in newlines:
         concats = line.split(' ')
         expected = concats[len(concats)-1].strip('{').strip('}').split(',')
-        print(expected)
-        # print(expected)
         data = []
         for i in range(1, len(concats) - 1):
-            data.append(concats[i].strip('(').strip(')'))
-        found = False
-        counter = 1
-        summer = 0
-        while not found:
-            multi_combinations = list(itertools.combinations_with_replacement(create_list(), counter))
-            print(multi_combinations)
-            for i in range(0,len(multi_combinations)):
-                # print(i)
-                multi = multi_combinations[i]
-                combinations = list(itertools.combinations(data, counter))
-                # print(combinations,'hi')
-                # print(combinations)
-                for combo in combinations:
-                    if do_move_p2(combo,multi, expected):
-                        found = True
-                        summer = sum_of_multis(multi)
-                        counter += 1
-                        # print(combo)
-            total += summer
+            datai = concats[i].strip('(').strip(')').split(',')
+            data.append(datai)
+        data.append(expected)
+        matrix_ints = []
+        for row_str in data:
+            row_ints = [int(element) for element in row_str]
+            matrix_ints.append(row_ints)
+        for i in range(len(expected)):
+            expected[i] = int(expected[i])
+        sub = solve_min_presses(matrix_ints, expected)
+        total += sub
     return total
-
-# print('Part One:', part_one())\
-print(part_two())
-# print(multi_combo_combo(4,('1','2','3','4')))
-# print(list(itertools.combinations_with_replacement([1,2,3,4,5],5)))
-
-# do_move(['(1,3)','(1,3)','(2)','(2,3)','(0,2)','(0,1)'],'[.##.]')
+print('Part One:', part_one())
+print('Part Two:', part_two())
