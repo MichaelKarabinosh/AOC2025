@@ -63,11 +63,10 @@ def solve_min_presses(buttons, targets):
     x = []
     for j in range(num_buttons):
         x.append(pulp.LpVariable(f"x{j}", lowBound=0, cat='Integer'))
-    # x = [pulp.LpVariable(f"x{j}", lowBound=0, cat='Integer') for j in range(num_buttons)]
     prob += pulp.lpSum(x)
     for p in range(output_length):
         prob += pulp.lpSum(x[j] for j in range(num_buttons) if p in buttons[j]) == targets[p]
-    prob.solve(pulp.PULP_CBC_CMD(msg=0))
+    prob.solve(pulp.PULP_CBC_CMD(msg=False))
     return int(pulp.value(prob.objective))
 
 def part_two():
