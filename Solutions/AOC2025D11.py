@@ -47,5 +47,29 @@ def part_two():
     return path_counts[destination]
 
 
+def draw_graph():
+    for layer, nodes in enumerate(networkx.topological_generations(network)):
+        for node in nodes:
+            network.nodes[node]["layer"] = layer
+    pos = networkx.multipartite_layout(network,subset_key="layer")
+
+
+    node_colors = []
+    highlight_node = 'dac'
+    highlight_node2 = 'fft'
+    for node in network.nodes():
+        if node == highlight_node or node == highlight_node2:
+            node_colors.append('red')  # Highlight color
+        else:
+            node_colors.append('skyblue')  # Default color
+
+
+
+    fig, ax = plt.subplots()
+    networkx.draw_networkx(network, pos=pos, node_color=node_colors, ax=ax, with_labels=True, arrows=True)
+    plt.show()
+
+
 # print('Part One:', part_one())
 print('Part Two:', part_two())
+print(draw_graph())
